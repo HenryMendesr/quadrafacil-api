@@ -2,6 +2,7 @@
 
 const express = require('express');
 const quadrasRouter = require('./quadras');
+const reservasRouter = require('./reservas');
 
 const router = express.Router();
 
@@ -10,5 +11,6 @@ router.get('/health', (req, res) => {
 });
 
 router.use('/quadras', quadrasRouter);
+router.use('/reservas', reservasRouter);
 
 module.exports = router;
