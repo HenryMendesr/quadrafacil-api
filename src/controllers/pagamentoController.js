@@ -28,6 +28,14 @@ function processarPagamento(req, res) {
     return res.status(400).json({ error: 'Não é possível pagar uma reserva cancelada.' });
   }
 
+  const pagamentoExistente = pagamentoService.buscarPagamentoPorReservaId(reservaId);
+  if (pagamentoExistente) {
+    return res.status(409).json({
+      error: 'Esta reserva já possui um pagamento aprovado.',
+      pagamentoId: pagamentoExistente.id,
+    });
+  }
+
   const quadra = quadraService.buscarQuadraPorId(reserva.quadraId);
   const resultadoPagamento = pagamentoService.simularAprovacaoDePagamento(metodo);
 
