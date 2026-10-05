@@ -4,10 +4,34 @@
  */
 
 const { reservas, gerarProximoIdReserva } = require('../data/mockData');
-const { buscarQuadraPorId } = require('./quadraService');
+const { buscarQuadraPorId, HORARIOS_PADRAO } = require('./quadraService');
 
 const REGEX_DATA = /^\d{4}-\d{2}-\d{2}$/;
 const REGEX_HORARIO = /^([01]\d|2[0-3]):[0-5]\d$/;
+const REGEX_TELEFONE = /^\d{10,11}$/;
+
+/** Verifica se uma data AAAA-MM-DD existe no calendário. */
+function dataISOValida(data) {
+  if (!REGEX_DATA.test(data)) return false;
+
+  const [ano, mes, dia] = data.split('-').map(Number);
+  const dataNormalizada = new Date(Date.UTC(ano, mes - 1, dia));
+
+  return (
+    dataNormalizada.getUTCFullYear() === ano &&
+    dataNormalizada.getUTCMonth() === mes - 1 &&
+    dataNormalizada.getUTCDate() === dia
+  );
+}
+
+/** Retorna a data local atual no formato AAAA-MM-DD. */
+function obterDataLocalAtual() {
+  const agora = new Date();
+  const ano = agora.getFullYear();
+  const mes = String(agora.getMonth() + 1).padStart(2, '0');
+  const dia = String(agora.getDate()).padStart(2, '0');
+  return `${ano}-${mes}-${dia}`;
+}
 
 /**
  * Lista reservas, opcionalmente filtradas por quadra.
@@ -36,14 +60,21 @@ function validarDadosDeReserva(dadosReserva) {
   if (!nomeCliente || !String(nomeCliente).trim()) {
     erros.push('O campo "nomeCliente" é obrigatório.');
   }
-  if (!telefoneCliente || !String(telefoneCliente).trim()) {
+  const telefoneNormalizado = String(telefoneCliente || '').replace(/\D/g, '');
+  if (!telefoneNormalizado) {
     erros.push('O campo "telefoneCliente" é obrigatório.');
+  } else if (!REGEX_TELEFONE.test(telefoneNormalizado)) {
+    erros.push('O campo "telefoneCliente" deve conter 10 ou 11 dígitos.');
   }
-  if (!data || !REGEX_DATA.test(data)) {
+  if (!data || !dataISOValida(data)) {
     erros.push('O campo "data" é obrigatório e deve estar no formato AAAA-MM-DD.');
+  } else if (data < obterDataLocalAtual()) {
+    erros.push('Não é possível reservar uma data que já passou.');
   }
   if (!horario || !REGEX_HORARIO.test(horario)) {
     erros.push('O campo "horario" é obrigatório e deve estar no formato HH:mm.');
+  } else if (!HORARIOS_PADRAO.includes(horario)) {
+    erros.push('O campo "horario" deve corresponder a um horário disponível da grade.');
   }
 
   return erros;
@@ -76,8 +107,8 @@ function criarReserva(dadosReserva) {
   const novaReserva = {
     id: gerarProximoIdReserva(),
     quadraId: Number(dadosReserva.quadraId),
-    nomeCliente: dadosReserva.nomeCliente,
-    telefoneCliente: dadosReserva.telefoneCliente,
+    nomeCliente: String(dadosReserva.nomeCliente).trim(),
+    telefoneCliente: String(dadosReserva.telefoneCliente).replace(/\D/g, ''),
     data: dadosReserva.data,
     horario: dadosReserva.horario,
     status: 'pendente',

@@ -50,13 +50,13 @@ A API sobe por padrão em `http://localhost:3001`.
 
 Copie `.env.example` para `.env` e ajuste se necessário:
 
-| Variável       | Descrição                                               | Valor padrão                 |
-| -------------- | -------------------------------------------------------- | ----------------------------- |
-| `PORT`         | Porta em que a API escuta                                | `3001`                         |
-| `NODE_ENV`     | Ambiente de execução                                     | `development`                  |
-| `DATABASE_URL` | URL de conexão com o banco (ainda não usada nesta etapa) | -                              |
-| `API_SECRET`   | Segredo usado para assinaturas/tokens futuros             | -                              |
-| `CORS_ORIGIN`  | Origem do frontend liberada no CORS                       | `http://localhost:5173`        |
+| Variável       | Descrição                                                | Valor padrão            |
+| -------------- | -------------------------------------------------------- | ----------------------- |
+| `PORT`         | Porta em que a API escuta                                | `3001`                  |
+| `NODE_ENV`     | Ambiente de execução                                     | `development`           |
+| `DATABASE_URL` | URL de conexão com o banco (ainda não usada nesta etapa) | -                       |
+| `API_SECRET`   | Segredo usado para assinaturas/tokens futuros            | -                       |
+| `CORS_ORIGIN`  | Origem do frontend liberada no CORS                      | `http://localhost:5173` |
 
 ## Estrutura de pastas
 
@@ -94,17 +94,17 @@ quadrafacil-api/
 
 Base URL: `http://localhost:3001/api`
 
-| Método | Rota                        | Descrição                                         | Status de sucesso | Status de erro            |
-| ------ | --------------------------- | --------------------------------------------------- | ------------------ | --------------------------- |
-| GET    | `/health`                   | Verifica se a API está no ar                        | 200                | -                            |
-| GET    | `/quadras`                  | Lista quadras com filtros opcionais (query string)   | 200                | -                            |
-| GET    | `/quadras/:id`               | Detalha uma quadra                                  | 200                | 404 (não encontrada)         |
-| GET    | `/quadras/:id/horarios`      | Horários livres/ocupados de uma quadra em uma data   | 200                | 400 (sem `data`), 404        |
-| POST   | `/quadras`                  | Cadastra uma nova quadra                             | 201                | 400 (dados inválidos)        |
-| GET    | `/reservas`                  | Lista reservas (aceita `?quadraId=`)                 | 200                | -                            |
-| POST   | `/reservas`                  | Cria uma reserva (status inicial "pendente")         | 201                | 400, 409 (conflito)           |
-| PATCH  | `/reservas/:id/cancelar`      | Cancela uma reserva, liberando o horário             | 200                | 404 (não encontrada)         |
-| POST   | `/pagamentos`                | Simula o pagamento e confirma a reserva vinculada    | 201                | 400, 404 (reserva inexistente) |
+| Método | Rota                     | Descrição                                          | Status de sucesso | Status de erro                      |
+| ------ | ------------------------ | -------------------------------------------------- | ----------------- | ----------------------------------- |
+| GET    | `/health`                | Verifica se a API está no ar                       | 200               | -                                   |
+| GET    | `/quadras`               | Lista quadras com filtros opcionais (query string) | 200               | -                                   |
+| GET    | `/quadras/:id`           | Detalha uma quadra                                 | 200               | 404 (não encontrada)                |
+| GET    | `/quadras/:id/horarios`  | Horários livres/ocupados de uma quadra em uma data | 200               | 400 (sem `data`), 404               |
+| POST   | `/quadras`               | Cadastra uma nova quadra                           | 201               | 400 (dados inválidos)               |
+| GET    | `/reservas`              | Lista reservas (aceita `?quadraId=`)               | 200               | -                                   |
+| POST   | `/reservas`              | Cria uma reserva (status inicial "pendente")       | 201               | 400, 409 (conflito)                 |
+| PATCH  | `/reservas/:id/cancelar` | Cancela uma reserva, liberando o horário           | 200               | 404 (não encontrada)                |
+| POST   | `/pagamentos`            | Simula o pagamento e confirma a reserva vinculada  | 201               | 400, 404, 409 (pagamento duplicado) |
 
 ### GET /api/health
 
@@ -128,7 +128,12 @@ Resposta 200:
     "bairro": "Batel",
     "esporte": "society",
     "precoHora": 180,
-    "estrutura": { "vestiario": true, "estacionamento": true, "iluminacao": true, "coberta": false },
+    "estrutura": {
+      "vestiario": true,
+      "estacionamento": true,
+      "iluminacao": true,
+      "coberta": false
+    },
     "fotos": ["https://picsum.photos/seed/arena-batel/600/400"],
     "horarioFuncionamento": { "abertura": "08:00", "fechamento": "23:00" },
     "descricao": "Grama sintética premium, a 5 minutos do Shopping Curitiba."
@@ -176,7 +181,10 @@ Resposta 201: a quadra criada, com `id` incremental.
 Resposta 400 (ex.: `precoHora` ausente ou ≤ 0):
 
 ```json
-{ "error": "Dados inválidos.", "detalhes": ["O campo \"precoHora\" precisa ser um número maior que zero."] }
+{
+  "error": "Dados inválidos.",
+  "detalhes": ["O campo \"precoHora\" precisa ser um número maior que zero."]
+}
 ```
 
 ### POST /api/reservas
@@ -215,6 +223,8 @@ Request body:
 
 Resposta 201: o pagamento criado com `status: "aprovado"` (a reserva vinculada passa para `"confirmada"`).
 
+Uma segunda tentativa de pagamento para a mesma reserva retorna 409 e não cria outra cobrança.
+
 ## Fluxo de branches e padrão de commits
 
 - `main`: código estável, pronto para entrega.
@@ -234,8 +244,8 @@ chore: configura prettier
 
 ## Equipe
 
-| Nome        | Função          | GitHub        |
-| ----------- | --------------- | ------------- |
-| [PREENCHER] | [PREENCHER]      | [PREENCHER]    |
-| [PREENCHER] | [PREENCHER]      | [PREENCHER]    |
-| [PREENCHER] | [PREENCHER]      | [PREENCHER]    |
+| Nome        | Função      | GitHub      |
+| ----------- | ----------- | ----------- |
+| [PREENCHER] | [PREENCHER] | [PREENCHER] |
+| [PREENCHER] | [PREENCHER] | [PREENCHER] |
+| [PREENCHER] | [PREENCHER] | [PREENCHER] |
